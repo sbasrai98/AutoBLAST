@@ -1,6 +1,6 @@
 import re
 import sys
-
+# test
 ## Call this script in the command line with:
 ## python3 digest.py <blastresultsfile> <sampleID>
 
