@@ -1,16 +1,16 @@
 import re
 import sys
+import argparse
 
-## Call this script in the command line with:
-## python3 digest.py <blastresultsfile> <sampleID>
-
-if len(sys.argv) < 3:
-    print("Not enough arguments.\nEnter: python3 digest.py <blastresultsfile> <sampleID>")
-    quit()
+parser = argparse.ArgumentParser(description='Extract and summarize BLAST results based on some filter')
+parser.add_argument('blast_results', help='file containing BLAST results')
+parser.add_argument('sample_id', help='identifier for sample')
+parser.add_argument('-filter', default='Viruses', help="string used to filter BLAST hits (default = 'Viruses')" )
+args = parser.parse_args()
 
 # load blast hits for sample n
 def loadhits(): 
-    fin = open(sys.argv[1])
+    fin = open(args.blast_results)
     blasthits = list(map(lambda x: x.split('\t'), fin.readlines()))
     fin.close()
     return blasthits
@@ -27,7 +27,7 @@ def tophits(blasthits):
 
 # trim to viruses, only keep relevant info, sort by virus into dictionary
 def virustrim(tophits):
-    virushits = list(filter(lambda x: 'Viruses' in x, tophits))
+    virushits = list(filter(lambda x: args.filter in str(x), tophits))
     short = list(map(lambda x: [x[0], x[1], x[2], x[3], x[14], x[11], x[12]], virushits))
     virkeys = list(map(lambda x: x[4], short))
     vhitsdict = dict.fromkeys(list(dict.fromkeys(virkeys)))
@@ -46,8 +46,8 @@ def summaryorder(hit):
 def summarize(hitsdict):
     summary = [] 
     summary.append('\n')
-    summary.append('Sample '+sys.argv[2]+' BLAST summary\n')
-    summary.append(',,Virus,Contigs,Hit Length,Identity\n')
+    summary.append('Sample '+args.sample_id+' BLAST summary\n')
+    summary.append(',,'+args.filter+',Contigs,Hit Length,Identity\n')
     hitlist = []
     for k in hitsdict:
         #virus = k
@@ -81,17 +81,17 @@ def output(hitsdict):
         qlen = hit[5]
         slen = hit[6]
         accession = access.findall(hit[1])[0][1:]
-        data.append(','.join([sys.argv[2], contig, virus, pid, alnlen, 
+        data.append(','.join([args.sample_id, contig, virus, pid, alnlen, 
                               annotation, qlen, slen, accession])+'\n')
     lowpid = list(filter(lambda x: float(x.split(',')[3]) < 95, data))
     lowpid.sort(key = lambda x: float(x.split(',')[3]))
     lowpid = lowpid[:15]
-    headings = ','.join(['Sample #','Contig #','Virus','Identity',
+    headings = ','.join(['Sample #','Contig #',args.filter,'Identity',
                           'Hit Length','Annotation','Query Length',
                           'Subject Length','Accession'])+'\n'
     summary = summarize(hitsdict)
 
-    fout = open(sys.argv[2]+'_blast_summary.csv', 'w')
+    fout = open('Sample '+args.sample_id+' '+args.filter+' BLAST summary.csv', 'w')
     for s in summary:
         fout.write(s)
     fout.write('Lowest identity top hits:\n')
