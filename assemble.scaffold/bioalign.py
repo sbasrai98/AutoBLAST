@@ -1,7 +1,13 @@
 from Bio import SeqIO
 from Bio.Seq import Seq
-contig_file = 'split farmaTo contigs.fa'
-reference = 'MT002973 ToBRFV.fasta'
+import sys
+
+if len(sys.argv) != 3:
+    print('enter: python3 '+sys.argv[0]+' <reference.fa> <contigs.fa>') 
+    quit()
+
+contig_file = sys.argv[2]
+reference = sys.argv[1]
 contigs = list( SeqIO.parse(contig_file, 'fasta') )
 ref = SeqIO.read(reference, 'fasta')
 
@@ -15,6 +21,7 @@ aligner.right_gap_score = 0
 # ref(Seq) + contigs(list of Seq) -> list of mappings
 def map_seqs(ref, seqs):
     positions = []
+    omitted = []
     for s in seqs:
         foraln = aligner.align(s.seq, ref.seq)[0]
         revaln = aligner.align(s.reverse_complement().seq, ref.seq)[0]
@@ -24,13 +31,26 @@ def map_seqs(ref, seqs):
         else:
             usealn = revaln
             direction = 'R'
-        if len(usealn.aligned) != 2: # problem...
-            print('The following sequence was not included due to a possible indel:')
-            print(s.description)
+        if len(usealn.aligned[1]) != 1: # should only be one aligned segment
+            # FAULTY INDEL DETECTION...triggers for some other case too, not just indel
+            omitted.append(s.description)
             continue
-        startidx = usealn.aligned[1][0][0]
-        stopidx = usealn.aligned[1][0][1]
-        positions.append([s.description, startidx, stopidx, direction])
+        ref_startidx = usealn.aligned[1][0][0]
+        #stopidx = usealn.aligned[1][0][1] # never used..
+        con_startidx = usealn.aligned[0][0][0]
+        if usealn.score < 50: # score too low, should not be aligned
+            # maybe include parameter: min score relative to contig size?
+            omitted.append(s.description)
+            continue
+        if ref_startidx < con_startidx:
+            print('%i nucleotides were trimmed from 5\' end of:' % con_startidx)
+            print(s.description)
+            s.description += ' (%i nt trimmed from 5\' end)' % con_startidx
+        positions.append([s.description, ref_startidx, con_startidx, direction])
+    
+    print('%i contigs mapped to:' % len(positions))
+    print(ref.description)
+    print('%i contigs not mapped' % len(omitted))
     positions.sort(key=lambda x: x[1])
     return positions
 
@@ -45,7 +65,7 @@ def build_msa(positions, seqs):
             sequence = sequence.reverse_complement().seq
         seqid = h[0]
         line = '-'*h[1]
-        line += sequence
+        line += sequence[h[2]:]
         msa_seqs.append( SeqIO.SeqRecord(id=seqid, seq=line, description=''))
     return msa_seqs
 
@@ -70,9 +90,10 @@ def consensus(msa):
             collapsed += highestchars[0]
     return SeqIO.SeqRecord(id='consensus', seq=Seq(collapsed), description='')
 
+# Mapping same set of contigs to multiple refs? Will overwrite files..
 posns = map_seqs(ref, contigs)
 msa = build_msa(posns, contigs)
-SeqIO.write(msa, 'tobrfv msa.fa', 'fasta')
+SeqIO.write(msa, sys.argv[2]+' msa.fa', 'fasta')
 
 msacollapse = consensus(msa)
-SeqIO.write(msacollapse, 'tobrfv consensus.fa', 'fasta')
+SeqIO.write(msacollapse, sys.argv[2]+' consensus.fa', 'fasta')
