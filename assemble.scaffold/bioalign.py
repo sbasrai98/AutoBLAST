@@ -11,6 +11,10 @@ reference = sys.argv[1]
 contigs = list( SeqIO.parse(contig_file, 'fasta') )
 ref = SeqIO.read(reference, 'fasta')
 
+name = contig_file[::-1]
+name = name[name.find('.')+1:][::-1]
+name = name+' to '+str(ref.id)
+
 from Bio import Align
 aligner = Align.PairwiseAligner()
 aligner.mismatch_score = -2
@@ -36,7 +40,7 @@ def map_seqs(ref, seqs):
             omitted.append(s.description)
             continue
         ref_startidx = usealn.aligned[1][0][0]
-        #stopidx = usealn.aligned[1][0][1] # never used..
+        ref_stopidx = usealn.aligned[1][0][1] # used for image..
         con_startidx = usealn.aligned[0][0][0]
         if usealn.score < 50: # score too low, should not be aligned
             # maybe include parameter: min score relative to contig size?
@@ -46,7 +50,7 @@ def map_seqs(ref, seqs):
             print('%i nucleotides were trimmed from 5\' end of:' % con_startidx)
             print(s.description)
             s.description += ' (%i nt trimmed from 5\' end)' % con_startidx
-        positions.append([s.description, ref_startidx, con_startidx, direction])
+        positions.append([s.description, ref_startidx, con_startidx, direction, ref_stopidx])
     
     print('%i contigs mapped to:' % len(positions))
     print(ref.description)
@@ -90,10 +94,47 @@ def consensus(msa):
             collapsed += highestchars[0]
     return SeqIO.SeqRecord(id='consensus', seq=Seq(collapsed), description='')
 
-# Mapping same set of contigs to multiple refs? Will overwrite files..
+# Mapping same set of contigs to multiple refs? 
+# Will overwrite files only if both refs have same .id !!
+
 posns = map_seqs(ref, contigs)
 msa = build_msa(posns, contigs)
-SeqIO.write(msa, sys.argv[2]+' msa.fa', 'fasta')
-
+SeqIO.write(msa, name+' msa.fa', 'fasta')
 msacollapse = consensus(msa)
-SeqIO.write(msacollapse, sys.argv[2]+' consensus.fa', 'fasta')
+SeqIO.write(msacollapse, name+' consensus.fa', 'fasta')
+
+from PIL import Image, ImageDraw
+
+def contig_diagram(posns):
+    lanes = [ [0, []] ]
+    for p in posns:
+        added = 0
+        for l in lanes:
+            if int(p[1]) - l[0] > 9:
+                l[1].append(p)
+                l[0] = int(p[4])
+                added = 1
+                break
+        # wasn't added to any lane
+        if added == 0:
+            lanes.append([int(p[4]), [p] ])
+
+    im = Image.new('RGB', (len(ref.seq)+1, (len(lanes)+1)*60), (255, 255, 255))
+    draw = ImageDraw.Draw(im)
+    # draw reference sequence at top
+    draw.rectangle([0, 0, len(ref.seq), 50], outline=(0,0,0), fill=(255,0,0))
+    ystart = 60
+    for l in lanes:
+        for p in l[1]:
+            draw.rectangle([int(p[1]), ystart, int(p[4]), ystart+50], outline=(0,0,0), fill=(0,0,255))
+        ystart += 60
+    im.save(name+' diagram.png', quality=100)
+
+contig_diagram(posns)
+
+# # for stacked view
+# ystart = 0
+# for p in posns: 
+#     draw.rectangle([int(p[1]), ystart, int(p[4]), ystart+50], outline=(0,0,0), fill=(0,0,255))
+#     ystart += 60
+# draw.rectangle([0, ystart, reflen, ystart+50], outline=(0,0,0), fill=(255,0,0))
