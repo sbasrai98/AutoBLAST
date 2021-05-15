@@ -33,8 +33,14 @@ def summarize_hits(hits):
     return summary
 
 all_hits = filter_hits('22test.txt', 'Viruses')
-summary = summarize_hits(all_hits)
 
+# fout = open('22blasthits.csv', 'w')
+# header = ['Contig','Virus','Identity','Hit Length','Query Length','Subject Length','Accession','Title']
+# fout.write(','.join(header)+'\n')
+# all_hits.to_csv(fout, index=False, header=False)
+
+summary = summarize_hits(all_hits)
+'''
 fout = open('sample 22 virus summary.csv', 'w')
 fout.write('BLAST Summary:\n')
 summary.to_csv(fout, index=False)
@@ -42,4 +48,4 @@ fout.write('\nAll hits:\n')
 header = ['Contig','Virus','Identity','Hit Length','Query Length','Subject Length','Accession','Title']
 fout.write(','.join(header)+'\n')
 all_hits.to_csv(fout, index = False, header=False) 
-fout.close()
+fout.close() '''
