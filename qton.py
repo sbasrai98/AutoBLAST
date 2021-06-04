@@ -18,3 +18,4 @@ data = data.replace('?', 'N')
 fout = open(sys.argv[1], 'w')
 fout.write(data)
 fout.close()
+
