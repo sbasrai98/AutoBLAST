@@ -1,7 +1,6 @@
 import re
 import sys
 
-
 def nuvselect(contig_data, contig_list):
     '''
     contig_data: string of all contigs
@@ -18,32 +17,3 @@ def nuvselect(contig_data, contig_list):
         except:
             print('Contig '+num+' not found')
     return contigs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
