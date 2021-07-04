@@ -1,5 +1,6 @@
 import pandas as pd 
 import re
+import sys
 
 # blast results file + filter(string) -> DataFrame trimmed/formatted 
 def filter_hits(blast_results_file, filter):
@@ -20,7 +21,7 @@ def filter_hits(blast_results_file, filter):
 
 # DataFrame(all hits) -> DataFrame(summary)
 def summarize_hits(hits):
-    summary = {'': [], 'Virus': [], 'Contigs': [], 'Length': [], 'Identity': []}
+    summary = {'': [], 'Virus': [], 'Contigs': [], 'Length': [], 'Identity': [], 'mxlen': [], 'mxid': []}
     for n in list(dict.fromkeys(hits['sscinames'])):
         onevirus = hits[hits['sscinames'] == n] # DataFrame for each virus
         summary['Virus'].append(n)
@@ -28,24 +29,21 @@ def summarize_hits(hits):
         summary['Length'].append(str(onevirus['qlen'].min())+' - '+str(onevirus['qlen'].max()))
         summary['Identity'].append(str(onevirus['pident'].min())+' - '+str(onevirus['pident'].max()))
         summary[''].append('')
+        summary['mxlen'].append(onevirus['qlen'].max())
+        summary['mxid'].append(onevirus['pident'].max())
     summary = pd.DataFrame(summary, columns=list(summary))
-    summary.sort_values(['Contigs', 'Length', 'Identity'], ascending= [False, True, False], inplace=True)
+    summary.sort_values(['Contigs', 'mxlen', 'mxid'], ascending= [False, False, False], inplace=True)
+    summary.drop(labels=['mxlen', 'mxid'], axis=1, inplace=True)
     return summary
 
-all_hits = filter_hits('22test.txt', 'Viruses')
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Enter: python3 "+sys.argv[0]+" <blastresults.txt> <sample_name>")
+        quit()
 
-# fout = open('22blasthits.csv', 'w')
-# header = ['Contig','Virus','Identity','Hit Length','Query Length','Subject Length','Accession','Title']
-# fout.write(','.join(header)+'\n')
-# all_hits.to_csv(fout, index=False, header=False)
+    all_hits = filter_hits(sys.argv[1], 'Viruses') #'test files/22test.txt'
+    header = ['Contig','Virus','Identity','Hit Length','Query Length','Subject Length','Accession','Title']
+    all_hits.to_csv(sys.argv[2]+'_all_hits.csv', index=False, header=header)
 
-summary = summarize_hits(all_hits)
-'''
-fout = open('sample 22 virus summary.csv', 'w')
-fout.write('BLAST Summary:\n')
-summary.to_csv(fout, index=False)
-fout.write('\nAll hits:\n')
-header = ['Contig','Virus','Identity','Hit Length','Query Length','Subject Length','Accession','Title']
-fout.write(','.join(header)+'\n')
-all_hits.to_csv(fout, index = False, header=False) 
-fout.close() '''
+    sum_hits = summarize_hits(all_hits)
+    sum_hits.to_csv(sys.argv[2]+'_summary.csv', index=False, header=list(sum_hits))

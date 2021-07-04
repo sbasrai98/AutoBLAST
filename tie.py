@@ -4,7 +4,7 @@ from Bio import SeqIO, Align, Entrez
 Entrez.email = 'sbasrai@uwaterloo.ca'
 from Bio.Seq import Seq
 from PIL import Image, ImageDraw
-from contigselection import write, nuv, prime
+from contigselection import write, nuv, prime, nuvselect, primeselect
 from contigmap import make_aligner, map_seqs, build_msa, consensus, contig_diagram
 
 if len(sys.argv) != 5:
@@ -13,7 +13,7 @@ if len(sys.argv) != 5:
 
 contig_file = sys.argv[1] #'sample16contigs.fasta'
 cont_file = open(contig_file)
-contig_data = cont_file.read()
+contig_data = cont_file.read() # reassigned this variable below..
 cont_file.close()
 
 if sys.argv[2] == 'nuv': pull_contigs = nuv
@@ -24,6 +24,10 @@ smp = sys.argv[3]  #'sample16'
 os.makedirs(smp) # will use sample name/id
 
 hits = pd.read_csv(sys.argv[4]) #'16blasthits.csv')
+all_conts = list(hits['Contig'])
+if sys.argv[2] == 'nuv': contig_data = nuvselect(contig_data, all_conts)
+if sys.argv[2] == 'prime': contig_data =  primeselect(contig_data, all_conts)
+write(smp+'/'+smp+cfa, contig_data)
 viruses = list(dict.fromkeys(hits['Virus']))
 
 for v in viruses: 
@@ -49,7 +53,8 @@ for v in viruses:
         if len(posns) > 0:
             msa = build_msa(posns, contigs)
             SeqIO.write(msa, smp+'/'+v+'/'+a+'/'+name+' msa.fa', 'fasta')
-            msacollapse = consensus(msa)
-            SeqIO.write(msacollapse, smp+'/'+v+'/'+a+'/'+name+' consensus.fa', 'fasta')
+            if len(posns) > 1:
+                msacollapse = consensus(msa)
+                SeqIO.write(msacollapse, smp+'/'+v+'/'+a+'/'+name+' consensus.fa', 'fasta')
             im = contig_diagram(posns, ref)
             im.save(smp+'/'+v+'/'+a+'/'+name+' diagram.png', quality=100)

@@ -5,7 +5,7 @@ import sys
 def make_aligner():
     aligner = Align.PairwiseAligner()
     aligner.mismatch_score = -2
-    aligner.gap_score = -3
+    aligner.gap_score = -15 # large score to limit gaps
     aligner.left_gap_score = 0
     aligner.right_gap_score = 0
     return aligner
@@ -31,7 +31,7 @@ def map_seqs(ref, seqs):
         ref_startidx = usealn.aligned[1][0][0]
         ref_stopidx = usealn.aligned[1][0][1] # used for image..
         con_startidx = usealn.aligned[0][0][0]
-        if usealn.score < 50: # score too low, should not be aligned
+        if usealn.score < 10: # score too low, should not be aligned
             # maybe include parameter: min score relative to contig size?
             omitted.append(s.description)
             continue
@@ -44,7 +44,9 @@ def map_seqs(ref, seqs):
     print('=====================')
     print(ref.description, ':')
     print('%i contigs mapped' % len(positions))
-    print('%i contigs not mapped' % len(omitted))
+    print('%i contigs not mapped:' % len(omitted))
+    for s in omitted:
+        print(s)
     print('=====================')
     positions.sort(key=lambda x: x[1])
     return positions

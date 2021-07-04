@@ -27,7 +27,24 @@ def primeselect(contig_data, contig_list):
     contigs = ''
     contig_list = list(map(str, contig_list))
     for num in contig_list:
-        hit = re.compile(f'(>Contig_{num}.+\n([A-Z]*\n)+)')
+        hit = re.compile(f'(Contig_{num}.+\n([A-Z]*\n)+)')
+        findhit = hit.findall(contig_data)
+        try:
+            contigs+='>'+findhit[0][0]
+        except:
+            print('Contig '+num+' not found')
+    return contigs
+
+def spadeselect(contig_data, contig_list):
+    '''
+    contig_data: string of all contigs
+    contig_list: list of int(or ints as strings)
+    returns string of selected contigs
+    '''
+    contigs = ''
+    contig_list = list(map(str, contig_list))
+    for num in contig_list:
+        hit = re.compile(f'(>NODE_{num}.*\n([A-Z]*\n)+)')
         findhit = hit.findall(contig_data)
         try:
             contigs+=findhit[0][0]
@@ -83,6 +100,9 @@ def prime(filename, contig_data, contig_list):
     write(filename, primeselect(contig_data, contig_list))
     splitup(filename)
 
+def spade(filename, contig_data, contig_list):
+    write(filename, spadeselect(contig_data, contig_list))
+
 if __name__ == "__main__":
     if len(sys.argv) != 5:
         print("Enter: python3 "+sys.argv[0]+" <contigs.fa> <contig_type> <output.fa> <list_of_contigs>")
@@ -95,5 +115,5 @@ if __name__ == "__main__":
 
     if sys.argv[2] == 'nuv': pull_contigs = nuv
     if sys.argv[2] == 'prime': pull_contigs = prime
+    if sys.argv[2] == 'spade': pull_contigs = spade
     pull_contigs(sys.argv[3], contig_data, contig_list)
-    
