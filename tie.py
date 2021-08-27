@@ -4,7 +4,7 @@ from Bio import SeqIO, Align, Entrez
 Entrez.email = 'sbasrai@uwaterloo.ca'
 from Bio.Seq import Seq
 from PIL import Image, ImageDraw
-from contigselection import write, nuv, prime, nuvselect, primeselect
+from contigselection import write, nuv, prime, spade, nuvselect, primeselect, spadeselect
 from contigmap import make_aligner, map_seqs, build_msa, consensus, contig_diagram
 
 if len(sys.argv) != 5:
@@ -18,6 +18,7 @@ cont_file.close()
 
 if sys.argv[2] == 'nuv': pull_contigs = nuv
 if sys.argv[2] == 'prime': pull_contigs = prime
+if sys.argv[2] == 'spade': pull_contigs = spade
 
 cfa = ' contigs.fa'
 smp = sys.argv[3]  #'sample16'
@@ -27,6 +28,7 @@ hits = pd.read_csv(sys.argv[4]) #'16blasthits.csv')
 all_conts = list(hits['Contig'])
 if sys.argv[2] == 'nuv': contig_data = nuvselect(contig_data, all_conts)
 if sys.argv[2] == 'prime': contig_data =  primeselect(contig_data, all_conts)
+if sys.argv[2] == 'spade': contig_data =  spadeselect(contig_data, all_conts)
 write(smp+'/'+smp+cfa, contig_data)
 viruses = list(dict.fromkeys(hits['Virus']))
 
