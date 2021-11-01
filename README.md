@@ -10,10 +10,10 @@ configured to run on Compute Canada's HPC clusters.
  * Extract viral sequences, generate summary (digestpd.py)
  * Download BLAST hits, align contigs, build scaffold/consensus sequences, generate coverage diagrams (tie.py, contigmap.py)
  * Map reads to viral contigs, get read counts (BBMap, SAMtools)
-  - Post-assembly mapped read counts can be useful as a rough proxy for relative abundance, but is not always guaranteed to be accurate!
+	  - Post-assembly mapped read counts can be useful as a rough proxy for relative abundance, but is not always guaranteed to be accurate!
  * Predict protein domains (HMMER)
 
-The output directory contains
+# Output
  * decontaminated reads
  * assembled contigs
  * hmmscan output
