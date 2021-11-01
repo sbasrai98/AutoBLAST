@@ -32,7 +32,6 @@ echo Summary written to: "$4"_summary.csv
 echo All hits written to: "$4"_all_hits.csv
 
 date +%r
-# LOADING ENV WILL NEED TO BE PUT IN WRAPPER SCRIPT.
 echo Loading Python virtual environment...
 module load python/3.8.10
 virtualenv --no-download tempenv
@@ -45,13 +44,16 @@ pip install --no-index biopython
 date +%r
 echo Aligning contigs to NCBI sequences, generating scaffolds and diagrams...
 python3 $PY/tie.py $4/contigs.fasta spade "$4"_virus_alignments "$4"_all_hits.csv > "$4"_tie_report.txt
+
+python3 $PY/translate_6frames.py "$4"_virus_alignments/"$4"_virus_alignments_contigs.fa
+
 deactivate
 rm -rf tempenv
 
 date +%r
 echo Mapping reads to viral contigs...
 module load bbmap
-bbmap.sh in1="$4"_R1_clean.fq in2="$4"_R2_clean.fq ref=$4/contigs.fasta out="$4"_mapped_reads.sam
+bbmap.sh in1="$4"_R1_clean.fq in2="$4"_R2_clean.fq ref="$4"_virus_alignments/"$4"_virus_alignments_contigs.fa out="$4"_mapped_reads.sam
 
 date +%r
 echo Converting SAM file, counting mapped/unmapped reads...
@@ -72,7 +74,18 @@ mv "$4"_mapped_reads.* "$4"_read_mapping
 mv "$4"_viral_read_counts.tsv "$4"_read_mapping
 
 date +%r
-echo Creating output directory
+echo Predicting protein domains...
+module load hmmer
+time hmmscan --domtblout "$4"_hmmer_output.tsv -o /dev/null ~/scratch/pfamdb/Pfam-A.hmm "$4"_virus_alignments/"$4"_virus_alignments_contigs_translated.fa
+python3 $PY/parse_tblout.py "$4"_hmmer_output.tsv
+python3 $PY/add_domains.py "$4"_hmmer_output_parsed.tsv "$4"_all_hits.csv
+
+mkdir "$4"_hmmscan
+mv "$4"_hmmer* "$4"_hmmscan
+mv "$4"_virus_alignments/"$4"_virus_alignments_contigs_translated.fa "$4"_hmmscan
+
+date +%r
+echo Creating output directory...
 mkdir "$4"_processed
 # mv $1 "$4"_processed
 # mv $2 "$4"_processed
@@ -83,4 +96,7 @@ mv "$4"_blasted.txt "$4"_processed
 mv "$4"_summary.csv "$4"_processed
 mv "$4"_all_hits.csv "$4"_processed
 mv "$4"_read_mapping "$4"_processed
+mv "$4"_tie_report.txt "$4"_virus_alignments
+mv "$4"_virus_alignments "$4"_processed
+mv "$4"_hmmscan "$4"_processed
 date +%r

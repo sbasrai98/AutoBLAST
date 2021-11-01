@@ -11,7 +11,7 @@ if len(sys.argv) != 5:
     print('Enter: python3 '+sys.argv[0]+' <contigs.fa> <contig_type> <sample_name> <sample_blast_hits.csv>') 
     quit()
 
-contig_file = sys.argv[1] #'sample16contigs.fasta'
+contig_file = sys.argv[1]
 cont_file = open(contig_file)
 contig_data = cont_file.read() # reassigned this variable below..
 cont_file.close()
@@ -20,11 +20,11 @@ if sys.argv[2] == 'nuv': pull_contigs = nuv
 if sys.argv[2] == 'prime': pull_contigs = prime
 if sys.argv[2] == 'spade': pull_contigs = spade
 
-cfa = ' contigs.fa'
-smp = sys.argv[3]  #'sample16'
-os.makedirs(smp) # will use sample name/id
+cfa = '_contigs.fa'
+smp = sys.argv[3]
+os.makedirs(smp)
 
-hits = pd.read_csv(sys.argv[4]) #'16blasthits.csv')
+hits = pd.read_csv(sys.argv[4])
 all_conts = list(hits['Contig'])
 if sys.argv[2] == 'nuv': contig_data = nuvselect(contig_data, all_conts)
 if sys.argv[2] == 'prime': contig_data =  primeselect(contig_data, all_conts)
@@ -47,16 +47,16 @@ for v in viruses:
         handle = Entrez.efetch(db="nucleotide", id=a, rettype="fasta", retmode="text")
         write(smp+'/'+v+'/'+a+'/'+a+'.fa', handle.read())
 
-        # contig map  ...could clean up...
+        # contig map
         contigs = list( SeqIO.parse(smp+'/'+v+'/'+a+'/'+a+cfa, 'fasta') )
         ref = SeqIO.read(smp+'/'+v+'/'+a+'/'+a+'.fa', 'fasta')
-        name = a+' contigs to '+str(ref.id)
+        name = a+'_contigs_to_'+str(ref.id)
         posns = map_seqs(ref, contigs)
         if len(posns) > 0:
             msa = build_msa(posns, contigs)
             SeqIO.write(msa, smp+'/'+v+'/'+a+'/'+name+' msa.fa', 'fasta')
             if len(posns) > 1:
                 msacollapse = consensus(msa)
-                SeqIO.write(msacollapse, smp+'/'+v+'/'+a+'/'+name+' consensus.fa', 'fasta')
+                SeqIO.write(msacollapse, smp+'/'+v+'/'+a+'/'+name+'_consensus.fa', 'fasta')
             im = contig_diagram(posns, ref)
-            im.save(smp+'/'+v+'/'+a+'/'+name+' diagram.png', quality=100)
+            im.save(smp+'/'+v+'/'+a+'/'+name+'_diagram.png', quality=100)
