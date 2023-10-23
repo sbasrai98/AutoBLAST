@@ -1,5 +1,6 @@
 from Bio import SeqIO, Align
 from Bio.Seq import Seq
+from PIL import Image, ImageDraw
 import sys
 
 def make_aligner():
@@ -90,7 +91,7 @@ def consensus(msa):
             collapsed += highestchars[0]
     return SeqIO.SeqRecord(id='consensus', seq=Seq(collapsed), description='')
 
-from PIL import Image, ImageDraw
+
 def contig_diagram(posns, ref):
     lanes = [ [0, []] ]
     for p in posns:

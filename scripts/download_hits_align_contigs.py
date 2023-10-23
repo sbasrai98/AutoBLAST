@@ -1,34 +1,47 @@
+#####################################
+# This script downloads reference sequences from NCBI, aligns contigs to the
+# reference, creates alignment diagrams, and organizes files by viruses
+#####################################
+
 import pandas as pd
-import os, re, sys
+import os, re
 from Bio import SeqIO, Align, Entrez
 Entrez.email = 'sbasrai@uwaterloo.ca'
 from Bio.Seq import Seq
 from PIL import Image, ImageDraw
-from contigselection import write, nuv, prime, spade, nuvselect, primeselect, spadeselect
-from contigmap import make_aligner, map_seqs, build_msa, consensus, contig_diagram
+from contigselection import write, spade, spadeselect
+from contigmap import map_seqs, build_msa, consensus, contig_diagram
+import argparse
 
-if len(sys.argv) != 5:
-    print('Enter: python3 '+sys.argv[0]+' <contigs.fa> <contig_type> <sample_name> <sample_blast_hits.csv>') 
-    quit()
+parser = argparse.ArgumentParser()
+parser.add_argument("contigs", help="contigs in FASTA format")
+parser.add_argument("assembler", help="only 'spade' accepted")
+parser.add_argument("sample", help="sample name (used in output)")
+parser.add_argument("blast_hits", help="parsed blast results file")
+args = parser.parse_args()
 
-contig_file = sys.argv[1]
+# if len(sys.argv) != 5:
+#     print('Enter: python3 '+sys.argv[0]+' <contigs.fa> <contig_type> <sample_name> <sample_blast_hits.csv>') 
+#     quit()
+
+contig_file = args.contigs
 cont_file = open(contig_file)
 contig_data = cont_file.read() # reassigned this variable below..
 cont_file.close()
 
-if sys.argv[2] == 'nuv': pull_contigs = nuv
-if sys.argv[2] == 'prime': pull_contigs = prime
-if sys.argv[2] == 'spade': pull_contigs = spade
+# if sys.argv[2] == 'nuv': pull_contigs = nuv
+# if sys.argv[2] == 'prime': pull_contigs = prime
+if args.assembler == 'spade': pull_contigs = spade
 
 cfa = '_contigs.fa'
-smp = sys.argv[3]
+smp = args.sample
 os.makedirs(smp)
 
-hits = pd.read_csv(sys.argv[4])
+hits = pd.read_csv(args.blast_hits, sep='\t')
 all_conts = list(hits['Contig'])
-if sys.argv[2] == 'nuv': contig_data = nuvselect(contig_data, all_conts)
-if sys.argv[2] == 'prime': contig_data =  primeselect(contig_data, all_conts)
-if sys.argv[2] == 'spade': contig_data =  spadeselect(contig_data, all_conts)
+# if sys.argv[2] == 'nuv': contig_data = nuvselect(contig_data, all_conts)
+# if sys.argv[2] == 'prime': contig_data =  primeselect(contig_data, all_conts)
+if args.assembler == 'spade': contig_data =  spadeselect(contig_data, all_conts)
 write(smp+'/'+smp+cfa, contig_data)
 viruses = list(dict.fromkeys(hits['Virus']))
 

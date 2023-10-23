@@ -1,5 +1,10 @@
 # system files
 .DS_Store
+
 # folder with example files for testing
 testing/*
+
+# pycache
+scripts/__pycache__/*
+
 

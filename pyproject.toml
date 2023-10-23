@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "viral-rnaseq"
+version = "1.0"
+description = "A pipeline for viral load characterirization"
+authors = ["Salman Basrai <sbasrai@ml6694-sbasrai.local>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">= 3.9, <3.13"
+pandas = "^2.1.1"
+matplotlib = "^3.8.0"
+biopython = "^1.81"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

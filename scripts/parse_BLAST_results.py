@@ -5,7 +5,7 @@ import pandas as pd
 def filter_hits(blast_results_file: str, filter_keyword: str) -> pd.DataFrame:
     """Parse BLAST results file and generate a human-readable .tsv file
     containing viral contigs and relevant columns.
-    
+
     blast_results_file: path to (tab-delimited) BLAST results file
     filter_keyword: keyword used to extract hits (ex. "Viruses")
 
@@ -48,29 +48,44 @@ def filter_hits(blast_results_file: str, filter_keyword: str) -> pd.DataFrame:
     return results
 
 
-# def summarize_hits(hits):
-#     summary = {'': [], 'Virus': [], 'Contigs': [], 'Length': [], 'Identity': [], 'mxlen': [], 'mxid': []}
-#     for n in list(dict.fromkeys(hits['sscinames'])):
-#         onevirus = hits[hits['sscinames'] == n] # DataFrame for each virus
-#         summary['Virus'].append(n)
-#         summary['Contigs'].append(onevirus.shape[0])
-#         summary['Length'].append(str(onevirus['qlen'].min())+' - '+str(onevirus['qlen'].max()))
-#         summary['Identity'].append(str(onevirus['pident'].min())+' - '+str(onevirus['pident'].max()))
-#         summary[''].append('')
-#         summary['mxlen'].append(onevirus['qlen'].max())
-#         summary['mxid'].append(onevirus['pident'].max())
-#     summary = pd.DataFrame(summary, columns=list(summary))
-#     summary.sort_values(['Contigs', 'mxlen', 'mxid'], ascending= [False, False, False], inplace=True)
-#     summary.drop(labels=['mxlen', 'mxid'], axis=1, inplace=True)
-#     return summary
+def summarize_hits(hits):
+    summary = {
+        "": [],
+        "Virus": [],
+        "Contigs": [],
+        "Length": [],
+        "Identity": [],
+        "mxlen": [],
+        "mxid": [],
+    }
+    for n in list(dict.fromkeys(hits["sscinames"])):
+        onevirus = hits[hits["sscinames"] == n]  # DataFrame for each virus
+        summary["Virus"].append(n)
+        summary["Contigs"].append(onevirus.shape[0])
+        summary["Length"].append(
+            str(onevirus["qlen"].min()) + " - " + str(onevirus["qlen"].max())
+        )
+        summary["Identity"].append(
+            str(onevirus["pident"].min()) + " - " + str(onevirus["pident"].max())
+        )
+        summary[""].append("")
+        summary["mxlen"].append(onevirus["qlen"].max())
+        summary["mxid"].append(onevirus["pident"].max())
+    summary = pd.DataFrame(summary, columns=list(summary))
+    summary.sort_values(
+        ["Contigs", "mxlen", "mxid"], ascending=[False, False, False], inplace=True
+    )
+    summary.drop(labels=["mxlen", "mxid"], axis=1, inplace=True)
+    return summary
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("blast_results", help="tab-delimited BLAST results file")
+    parser.add_argument("blast_results", help="tab-delimited BLAST results")
     parser.add_argument("output", help="name of output file to write")
     args = parser.parse_args()
 
-    all_hits = filter_hits(args.blast_results, "Viruses")  #'test files/22test.txt'
+    all_hits = filter_hits(args.blast_results, "Viruses")
     header = [
         "Contig",
         "Virus",
