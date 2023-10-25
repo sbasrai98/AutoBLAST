@@ -42,7 +42,7 @@ all_conts = list(hits['Contig'])
 # if sys.argv[2] == 'nuv': contig_data = nuvselect(contig_data, all_conts)
 # if sys.argv[2] == 'prime': contig_data =  primeselect(contig_data, all_conts)
 if args.assembler == 'spade': contig_data =  spadeselect(contig_data, all_conts)
-write(smp+'/'+smp+cfa, contig_data)
+#write(smp+'/'+smp+cfa, contig_data)
 viruses = list(dict.fromkeys(hits['Virus']))
 
 for v in viruses: 
