@@ -6,6 +6,7 @@ testing/*
 
 # pycache
 scripts/__pycache__/*
+tests/__pycache__/*
 
 # conda env, snakemake stuff
 pipeline-env/*
