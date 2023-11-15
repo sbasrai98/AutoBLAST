@@ -8,7 +8,6 @@ class test_filter_hits(unittest.TestCase):
 
     def test_filter_hits(self):
         parsed_hits = filter_hits(self.input_file, 'Viruses')
-        self.assertIsInstance(parsed_hits, pd.DataFrame, 'filter_hits() returns a DataFrame')
-        self.assertEqual(parsed_hits.shape[0], 70, 'parsed_hits DataFrame has correct number of rows')
-        self.assertEqual(parsed_hits.shape[1], 8, 'parsed_hits DataFrame has correct number of columns')
-        
+        self.assertIsInstance(parsed_hits, pd.DataFrame, 'filter_hits() should return a DataFrame')
+        self.assertEqual(parsed_hits.shape[0], 70, 'parsed_hits DataFrame has incorrect number of rows')
+        self.assertEqual(parsed_hits.shape[1], 8, 'parsed_hits DataFrame has incorrect number of columns')
