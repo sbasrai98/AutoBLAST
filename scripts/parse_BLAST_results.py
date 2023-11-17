@@ -2,7 +2,7 @@ import re
 import argparse
 import pandas as pd
 
-def filter_hits(blast_results_file: str, filter_keyword: str) -> pd.DataFrame:
+def filter_hits(blast_results_file: str, filter_keyword: str, sample=None) -> pd.DataFrame:
     """Parse BLAST results file and generate a human-readable .tsv file
     containing viral contigs and relevant columns.
 
@@ -45,6 +45,11 @@ def filter_hits(blast_results_file: str, filter_keyword: str) -> pd.DataFrame:
     results["qseqid"] = results["qseqid"].map(lambda x: contig_num.findall(x)[0][1:])
     access = re.compile("\|[^a-z]+\.[0-9]+")  # get NCBI accession IDs
     results["sseqid"] = results["sseqid"].map(lambda x: access.findall(x)[0][1:])
+    
+    if isinstance(sample, str):
+        results['sample'] = sample
+        results = results[['sample'] + list(results.columns[:-1])]
+    
     return results
 
 
@@ -83,9 +88,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("blast_results", help="tab-delimited BLAST results")
     parser.add_argument("output", help="name of output file to write")
+    parser.add_argument("-s", "--sample_name", type=str, help="specify a sample name to include in the output")
     args = parser.parse_args()
 
-    all_hits = filter_hits(args.blast_results, "Viruses")
     header = [
         "Contig",
         "Virus",
@@ -96,6 +101,13 @@ if __name__ == "__main__":
         "Accession",
         "Title",
     ]
+
+    sample_name = None
+    if args.sample_name:
+        sample_name = args.sample_name
+        header = ['Sample'] + header
+
+    all_hits = filter_hits(args.blast_results, "Viruses", sample=sample_name)
     all_hits.to_csv(args.output, index=False, header=header, sep="\t")
 
     # sum_hits = summarize_hits(all_hits)

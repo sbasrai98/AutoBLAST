@@ -45,7 +45,7 @@ rule parse_BLAST_results:
 		memory="8G",
 		time="0:30:0"
 	shell:
-		"time python3 scripts/parse_BLAST_results.py {input} {output}"
+		"time python3 scripts/parse_BLAST_results.py {input} {output} -s {wildcards.sample}"
 
 rule download_hits_align_contigs:
 	input:
