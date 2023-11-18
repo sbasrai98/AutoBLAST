@@ -12,8 +12,9 @@ with open(args.sample_list) as file_in: # 'sra_samples1.txt'
 
 #samples = ['SRR17332371']
 
+os.makedirs('xml') # make xml directory if it doesn't exist
 for s in samples:
-    os.system(f"esearch -db sra -query '{s}[accession]' | efetch -format native -mode xml > {s}_meta.xml")
+    os.system(f"esearch -db sra -query '{s}[accession]' | efetch -format native -mode xml > xml/{s}_meta.xml")
 
 # SRR25318402
 
@@ -45,7 +46,7 @@ sra_metadata = pd.DataFrame(columns=metadata_paths.keys())
 
 for s in samples: #['SRR17589118']:
 
-    tree = ET.parse(f'{s}_meta.xml')
+    tree = ET.parse(f'xml/{s}_meta.xml')
     root = tree.getroot()
 
     metadata = dict.fromkeys(metadata_paths.keys())

@@ -5,7 +5,7 @@
 date +%r
 
 source /u/sbasrai/mambaforge/etc/profile.d/conda.sh
-conda activate ./pipeline-env/
+conda activate ./.venv/
 
 snakemake -p --keep-incomplete --latency-wait 60 -j 100 \
 --cluster "qsub -P abelsonlab -l h_vmem={resources.memory},h_rt={resources.time} -pe smp {threads} -V \
