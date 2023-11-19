@@ -7,15 +7,18 @@ import xml.etree.ElementTree as ET
 # %%
 parser = argparse.ArgumentParser()
 parser.add_argument("sample_list", help="file containing SRA accessions")
+parser.add_argument("output_file", help="file name for output")
+args = parser.parse_args()
 
-#with open(args.sample_list) as file_in: # 
-with open('sra_samples1.txt') as file_in:
+with open(args.sample_list) as file_in: # 
+#with open('sra_samples1.txt') as file_in:
     samples = [x.rstrip() for x in file_in.readlines()]
 
 os.makedirs('xml', exist_ok=True) # make xml directory if it doesn't exist
 
-# for s in samples:
-    # os.system(f"esearch -db sra -query '{s}[accession]' | efetch -format native -mode xml > xml/{s}_meta.xml")
+for s in samples:
+    if not os.path.isfile(f'xml/{s}_meta.xml'):
+        os.system(f"esearch -db sra -query '{s}[accession]' | efetch -format native -mode xml > xml/{s}_meta.xml")
 
 # %%
 
@@ -74,4 +77,4 @@ for s in samples: #  SRR17589118  SRR25318402
     sra_metadata.loc[s] = metadata.values()
 
 sra_metadata.index.rename('SRA Accession', inplace=True)
-sra_metadata.to_csv('sra_metadata3.csv')
+sra_metadata.to_csv(args.output_file)
