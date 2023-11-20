@@ -39,12 +39,10 @@ def filter_hits(blast_results_file: str, filter_keyword: str, sample=None) -> pd
     results = results[
         ["qseqid", "sscinames", "pident", "length", "qlen", "slen", "sseqid", "stitle"]
     ]
-    contig_num = re.compile(
-        "_[0-9]+"
-    )  # get contig numbers. Expects headers like ">NODE_562_length.."
-    results["qseqid"] = results["qseqid"].map(lambda x: contig_num.findall(x)[0][1:])
-    access = re.compile("\|[^a-z]+\.[0-9]+")  # get NCBI accession IDs
-    results["sseqid"] = results["sseqid"].map(lambda x: access.findall(x)[0][1:])
+    # get contig numbers. qseqid format: "NODE_562_length.."
+    results["qseqid"] = [x.split('_')[1] for x in results["qseqid"]]
+    accession = re.compile("\|[^a-z]+\.[0-9]+")  # get NCBI accession IDs
+    results["sseqid"] = [accession.findall(x)[0][1:] for x in results["sseqid"]]
     
     if isinstance(sample, str):
         results['sample'] = sample
@@ -110,5 +108,5 @@ if __name__ == "__main__":
     all_hits = filter_hits(args.blast_results, "Viruses", sample=sample_name)
     all_hits.to_csv(args.output, index=False, header=header, sep="\t")
 
-    # sum_hits = summarize_hits(all_hits)
-    # sum_hits.to_csv(sys.argv[2]+'_summary.csv', index=False, header=list(sum_hits))
+    # hits_summary = summarize_hits(all_hits)
+    # hits_summary.to_csv(sys.argv[2]+'_summary.csv', index=False, header=list(sum_hits))

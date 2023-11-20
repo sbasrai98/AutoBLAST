@@ -1,5 +1,4 @@
-#configfile: "config.yaml"
-
+# load sample list
 with open('pipetest/sra_samples1.txt') as input_file:
 	inputs = [x.rstrip() for x in input_file.readlines()]
 
@@ -29,7 +28,7 @@ rule BLAST_contigs:
 	threads: 24
 	resources:
 		memory="16G",
-		time="12:0:0"
+		time="5:0:0"
 	shell:
 		'time blastn -db nt -query {input} -max_target_seqs 1 -out {output} -evalue 1e-60 -num_threads {threads} -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue qlen slen staxids sscinames scomnames sblastnames sskingdoms stitle salltitles"; '
 		"sed -i '1s/^/qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tqlen\tslen\tstaxids\tsscinames\tscomnames\tsblastnames\tsskingdoms\tstitle\tsalltitles\
@@ -47,17 +46,16 @@ rule parse_BLAST_results:
 	shell:
 		"time python3 scripts/parse_BLAST_results.py {input} {output} -s {wildcards.sample}"
 
-rule download_hits_align_contigs:
+rule extract_contigs:
 	input:
-		contigs="pipetest/inputs/{sample}_contigs.fa",
+		contigs="pipetest/assembly/{sample}_assembly/contigs.fasta"
 		parsed_hits="pipetest/parsed/{sample}_parsed_hits.txt"
 	output:
-		directory("pipetest/results/{sample}")
+		"pipetest/viral_contigs/{sample}_viral_contigs.fa"
+	threads: 1
+	resources:
+		memory="8G",
+		time="0:30:0"
 	shell:
-#		"bash scripts/dl_wrapper.sh {input.contigs} spade pipetest/zipped_results/{wildcards.sample}/ {input.parsed_hits}"
-		"python3 scripts/download_hits_align_contigs.py {input.contigs} spade {output} {input.parsed_hits}"
+		""	
 
-
-# sample_22
-
-#bash scripts/dl_wrapper.sh pipetest/inputs/sample_22_contigs.fa spade pipetest/zipped_results/sample_22 pipetest/parsed/sample_22_parsed_hits.txt

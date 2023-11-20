@@ -43,8 +43,8 @@ metadata_paths['Study Title'] = ['EXPERIMENT_PACKAGE','STUDY','DESCRIPTOR','STUD
 metadata_paths['Study Abstract'] = ['EXPERIMENT_PACKAGE','STUDY','DESCRIPTOR','STUDY_ABSTRACT']
 metadata_paths['Scientific Name'] = ['EXPERIMENT_PACKAGE','SAMPLE','SAMPLE_NAME','SCIENTIFIC_NAME']
 metadata_paths['Taxon ID'] = ['EXPERIMENT_PACKAGE','SAMPLE','SAMPLE_NAME','TAXON_ID']
-metadata_paths['Sample Location'] = []
-metadata_paths['Sample Attributes'] = ['EXPERIMENT_PACKAGE','SAMPLE','SAMPLE_ATTRIBUTES'] # TODO: sample attributes, will need to use findall and create key/value pairs for each
+metadata_paths['Sample Location'] = [] # filled in when searching through sample attributes
+metadata_paths['Sample Attributes'] = ['EXPERIMENT_PACKAGE','SAMPLE','SAMPLE_ATTRIBUTES']
 
 sra_metadata = pd.DataFrame(columns=metadata_paths.keys())
 
