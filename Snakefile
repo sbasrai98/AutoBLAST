@@ -4,8 +4,9 @@ with open('pipetest/sra_samples1.txt') as input_file:
 
 rule all:
 	input:
-		expand("pipetest/parsed/{sample}_parsed_hits.txt", sample=inputs)
-
+		expand("pipetest/viral_contigs/{sample}_viral_contigs.fa", sample=inputs)	
+		# expand("pipetest/parsed/{sample}_parsed_hits.txt", sample=inputs)
+		
 rule assemble_reads:
 	input:
 		r1="pipetest/fastq/{sample}_1.fastq",
@@ -41,21 +42,20 @@ rule parse_BLAST_results:
 		"pipetest/parsed/{sample}_parsed_hits.txt"
 	threads: 1
 	resources:
-		memory="8G",
-		time="0:30:0"
+		memory="2G",
+		time="0:20:0"
 	shell:
 		"time python3 scripts/parse_BLAST_results.py {input} {output} -s {wildcards.sample}"
 
 rule extract_contigs:
 	input:
-		contigs="pipetest/assembly/{sample}_assembly/contigs.fasta"
+		contigs="pipetest/assembly/{sample}_assembly/contigs.fasta",
 		parsed_hits="pipetest/parsed/{sample}_parsed_hits.txt"
 	output:
 		"pipetest/viral_contigs/{sample}_viral_contigs.fa"
 	threads: 1
 	resources:
-		memory="8G",
-		time="0:30:0"
+		memory="2G",
+		time="0:10:0"
 	shell:
-		""	
-
+		"time python3 scripts/extract_contigs.py {input.parsed_hits} {input.contigs} {output}"
