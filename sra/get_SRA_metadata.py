@@ -44,6 +44,7 @@ metadata_paths['Study Abstract'] = ['EXPERIMENT_PACKAGE','STUDY','DESCRIPTOR','S
 metadata_paths['Scientific Name'] = ['EXPERIMENT_PACKAGE','SAMPLE','SAMPLE_NAME','SCIENTIFIC_NAME']
 metadata_paths['Taxon ID'] = ['EXPERIMENT_PACKAGE','SAMPLE','SAMPLE_NAME','TAXON_ID']
 metadata_paths['Sample Location'] = [] # filled in when searching through sample attributes
+metadata_paths['Sample Cultivar'] = []
 metadata_paths['Sample Attributes'] = ['EXPERIMENT_PACKAGE','SAMPLE','SAMPLE_ATTRIBUTES']
 
 sra_metadata = pd.DataFrame(columns=metadata_paths.keys())
@@ -66,6 +67,8 @@ for s in samples: #  SRR17589118  SRR25318402
                 for child in current:
                     if child[0].text == 'geo_loc_name':
                         metadata['Sample Location'] = child[1].text
+                    elif child[0].text == 'cultivar':
+                        metadata['Sample Cultivar'] = child[1].text
                     else:
                         attributes += f'{child[0].text}:{child[1].text}, '
                 attributes = attributes.rstrip(', ')
