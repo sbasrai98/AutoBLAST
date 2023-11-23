@@ -22,4 +22,7 @@ fi
 
 date +%r
 
-# while read line; do qsub -P abelsonlab -l h_vmem=2G,h_rt=0:70:0 -q u20build download_SRA.sh $line; done < sra_samples.txt
+# while read line; do qsub -P abelsonlab -l h_vmem=2G,h_rt=0:70:0 -q u20build \
+-e /.mounts/labs/abelsonlab/private/salman/viral-RNAseq-pipeline/sra/job_oe/"$line"_err.txt \
+-o /.mounts/labs/abelsonlab/private/salman/viral-RNAseq-pipeline/sra/job_oe/"$line"_out.txt \
+download_SRA.sh $line; done < sra_samples.txt

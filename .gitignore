@@ -16,3 +16,5 @@ pipetest/*
 # SRA files
 sra/xml/*
 sra/sra_dump/*
+sra/all_samples/*
+sra/job_oe/*
