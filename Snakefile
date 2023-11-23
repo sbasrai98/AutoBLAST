@@ -4,13 +4,28 @@ with open('pipetest/sra_samples1.txt') as input_file:
 
 rule all:
 	input:
-		expand("pipetest/viral_contigs/{sample}_viral_contigs.fa", sample=inputs)	
+		expand("pipetest/fastq/qc/{sample}_1_fastqc.html", sample=inputs)
+		# expand("pipetest/viral_contigs/{sample}_viral_contigs.fa", sample=inputs)	
 		# expand("pipetest/parsed/{sample}_parsed_hits.txt", sample=inputs)
-		
-rule assemble_reads:
+
+rule fastqc:
 	input:
 		r1="pipetest/fastq/{sample}_1.fastq",
 		r2="pipetest/fastq/{sample}_2.fastq"
+	output:
+		r1_out="pipetest/fastq/qc/{sample}_1_fastqc.html",
+		r2_out="pipetest/fastq/qc/{sample}_2_fastqc.html",
+	threads: 2
+	resources:
+		memory="4G",
+		time="0:30:0"
+	shell:
+		"time fastqc -t {threads} -o pipetest/fastq/qc {input.r1} {input.r2}"
+
+rule assemble_reads:
+	input:
+		r1="pipetest/fastq/{sample}_1.fastq.gz",
+		r2="pipetest/fastq/{sample}_2.fastq.gz"
 	output:
 		folder=directory("pipetest/assembly/{sample}_assembly"),
 		contigs="pipetest/assembly/{sample}_assembly/contigs.fasta"
