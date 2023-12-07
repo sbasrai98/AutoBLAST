@@ -1,10 +1,13 @@
 # load sample list
-with open('pipetest/sra_samples1.txt') as input_file:
+with open('pipetest/sra_ids00.5.txt') as input_file:
 	inputs = [x.rstrip() for x in input_file.readlines()]
+#inputs = []
 
 rule all:
 	input:
-		expand("pipetest/fastq/qc/{sample}_1_fastqc.html", sample=inputs)
+		expand("pipetest/viral_contigs/{sample}", sample=inputs)
+		
+		# expand("pipetest/fastq/qc/{sample}_1_fastqc.html", sample=inputs)
 		# expand("pipetest/viral_contigs/{sample}_viral_contigs.fa", sample=inputs)	
 		# expand("pipetest/parsed/{sample}_parsed_hits.txt", sample=inputs)
 
@@ -67,10 +70,10 @@ rule extract_contigs:
 		contigs="pipetest/assembly/{sample}_assembly/contigs.fasta",
 		parsed_hits="pipetest/parsed/{sample}_parsed_hits.txt"
 	output:
-		"pipetest/viral_contigs/{sample}_viral_contigs.fa"
+		directory("pipetest/viral_contigs/{sample}")
 	threads: 1
 	resources:
 		memory="2G",
-		time="0:10:0"
+		time="0:15:0"
 	shell:
 		"time python3 scripts/extract_contigs.py {input.parsed_hits} {input.contigs} {output}"
